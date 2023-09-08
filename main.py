@@ -5,10 +5,12 @@ import json
 import os
 import time
 
+import xml.etree.ElementTree as ET
+
 
 # Имя директории, в которой будут сохранены изображения
-directory_name = "29158964"
-
+directory_name = "d29264730"
+#
 cookies = {
     'search-session': '|6a179a8c_zuamIi|0|29158964.29940559.24908804.24443649.27561386.27818548.30401334.29746351.30383113.25777492.24056926.27891713.29333387.27561436.28565466.30062052.30145512.30003965.28449728.25554829.22015242.30184127.28561621.29727383.28937335.30143600.29856183.28226551.28644016.28951817.24476162.30398070.30394802.28909285.28755931.29727601.29228144.25777493.24975400.29069179.29986850.30387912.30007212.30089089.27585922.28592010.25592417.30031494.28886644.25911730.29773938.22942059.29632645.28628991.30402696.22107117.29402616.30184149.30193177.29635311.30090003',
     'chronosessid': 'f84e7257-84c8-4d1f-894f-e4868ef0e245',
@@ -58,8 +60,11 @@ headers = {
     'upgrade-insecure-requests': '1',
     'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36',
 }
+# #https://www.chrono24.com/omega/omega-seamaster-aqua-terra-beijing-2008-limited-edition--id29264730.htm
+# #response = requests.get('https://www.chrono24.com/tagheuer/ref-cv2013-3--id29158964.htm', cookies=cookies, headers=headers)
+#
 
-response = requests.get('https://www.chrono24.com/tagheuer/ref-cv2013-3--id29158964.htm', cookies=cookies, headers=headers)
+response = requests.get('https://www.chrono24.com/omega/omega-seamaster-aqua-terra-beijing-2008-limited-edition--id29264730.htm', cookies=cookies, headers=headers)
 
 if response.status_code == 200:
     html_content = response.text
@@ -67,14 +72,83 @@ if response.status_code == 200:
     soup = BeautifulSoup(html_content, 'html.parser')
 
 
-    # # Вывод всего разобранного HTML в файл
-    # with open('000.html', 'w', encoding='utf-8') as file:
-    #     file.write(soup.prettify())
-    # print("Результат сохранен в файл 000.html")
-    #
+    # Вывод всего разобранного HTML в файл
+    with open('000.html', 'w', encoding='utf-8') as file:
+        file.write(soup.prettify())
+    print("Результат сохранен в файл 000.html")
+
+
     # # Открываем файл 000.html и считываем его содержимое
     # with open("000.html", "r", encoding="utf-8") as html_file:
     #     html_content = html_file.read()
+
+    soup = BeautifulSoup(html_content, 'html.parser')
+
+    prod = soup.find("section", class_='js-details-and-security-tabs').find_all('tbody')
+
+    data = {}
+
+    # print(prod.text.strip())
+    # print(len(prod))
+    for i in prod:
+        # tit_ = i.find('h3').text.strip()
+        # print(f'{tit_}')
+
+        tr_s = i.find_all('tr')
+
+        current_category = ''
+        category_data = {}
+
+        for y in i.find_all('tr'):
+
+            try:
+                current_category = y.find('h3').text.strip()
+                # print(f'{current_category}')
+            except:
+                td_s = y.find_all('td')
+                if len(td_s) > 1:
+                    key = td_s[0].text.strip()
+                    value_ = td_s[1].text.strip()
+                    value = ' '.join(value_.split())
+                    # print(f'\t{key} >>>>> {value}')
+                else:
+                    key = 'data'
+                    value = td_s[0].text.strip()
+                    # print(f'\t\t\t{value}')
+
+                category_data[key] = value
+
+        data[current_category] = category_data
+
+    params = {
+        'id': '29264730',
+        'notes': '',
+        't': '1694190268107',
+    }
+
+    response = requests.get('https://www.chrono24.com/search/detail.htm', params=params, cookies=cookies, headers=headers)
+
+    # Получаем текстовое содержимое ответа
+    xml_response = response.text
+
+    # Разбор XML
+    root = ET.fromstring(xml_response)
+
+    # Извлекаем текст из CDATA
+    cdata_text = root.text
+
+    # Заменяем "<br>" на пробелы
+    text_without_br = cdata_text.replace("<br>", " ")
+    # Удаляем лишние пробелы
+    cleaned_text = " ".join(text_without_br.split())
+
+    data["Description"]["data"] = cleaned_text
+
+
+    # Записываем информацию в JSON файл
+    with open('111.json', 'w', encoding='utf-8') as json_file:
+        json.dump(data, json_file, ensure_ascii=False, indent=4)
+
 
     script_tag = soup.find("script", {"type": "application/ld+json"})
 
