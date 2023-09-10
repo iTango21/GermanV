@@ -263,7 +263,8 @@ with open("links.txt", "r", encoding="utf-8") as file:
             if download_zoom_images:
 
                 zoom = True
-                # Находим тег <div> с атрибутом data-zoom-image
+                link_dict['zoom'] = []
+
                 img_div = soup.find_all('div', {'data-zoom-image': True})
 
                 if len(img_div) != 0:
@@ -277,6 +278,7 @@ with open("links.txt", "r", encoding="utf-8") as file:
             if download_data_image:
 
                 zoom = False
+                link_dict['data'] = []
 
                 script_tag = soup.find("script", {"type": "application/ld+json"})
 
@@ -285,9 +287,9 @@ with open("links.txt", "r", encoding="utf-8") as file:
                     script_content = script_tag.string
                     script_content_ = json.loads(script_content)
 
-                    # Сохраняем содержимое в файл "000.json"
-                    with open(f"{directory_name}.json", "w", encoding="utf-8") as json_file:
-                        json.dump(script_content_, json_file, ensure_ascii=False, indent=4)
+                    # # Сохраняем содержимое в файл "000.json"
+                    # with open(f"{directory_name}.json", "w", encoding="utf-8") as json_file:
+                    #     json.dump(script_content_, json_file, ensure_ascii=False, indent=4)
 
                 for url_ in script_content_["@graph"][1]["image"]:
                     image_url = url_["contentUrl"]
