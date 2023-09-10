@@ -11,6 +11,9 @@ import xml.etree.ElementTree as ET
 download_zoom_images = True     # True or False
 download_data_image = True      # True or False
 
+link_dict = {}
+link_dict['data'] = []
+link_dict['zoom'] = []
 
 def download_img(img_url, dir_name, zoom_):
     file_name = os.path.basename(img_url)
@@ -22,9 +25,11 @@ def download_img(img_url, dir_name, zoom_):
 
         # Теперь, когда "dir2" существует, проверяем наличие файла внутри "dir2"
         file_path = os.path.join(dir2_path, file_name)
+        link_dict['zoom'].append(img_url)
     else:
         # Проверяем наличие файла в "dir1"
         file_path = os.path.join(dir_name, file_name)
+        link_dict['data'].append(img_url)
 
     if os.path.isfile(file_path):
         print(f"\tImage {file_name} already exists in directory {dir_name}")
@@ -44,6 +49,7 @@ def download_img(img_url, dir_name, zoom_):
                 print(f"\tImage {file_name} saved!")
         else:
             print(f"\n\tFailed to download image {file_name}. Error status code: {response.status_code}\n")
+
 
 
 with open("links.txt", "r", encoding="utf-8") as file:
@@ -219,9 +225,6 @@ with open("links.txt", "r", encoding="utf-8") as file:
                 "SellerID": id_
             }
 
-            with open(f'111_{id_}.json', 'w', encoding='utf-8') as json_file:
-                json.dump(data, json_file, ensure_ascii=False, indent=4)
-
             cookies = {
                 '__ssid': '48fcab77fc77e691a2f766df428787c',
                 'FPID': 'FPID2.2.SNMSTPBdw09c%2FOemDe2nY1YKAHe20RIAOmbxmmiUlZw%3D.1694171145',
@@ -293,4 +296,7 @@ with open("links.txt", "r", encoding="utf-8") as file:
                     # print(image_url)
 
                     download_img(image_url, directory_name, zoom)
-        # breakpoint()
+            data["IMG"] = link_dict
+
+            with open(f'111_{id_}.json', 'w', encoding='utf-8') as json_file:
+                json.dump(data, json_file, ensure_ascii=False, indent=4)
