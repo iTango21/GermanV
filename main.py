@@ -210,11 +210,17 @@ with open("links.txt", "r", encoding="utf-8") as file:
                 pass
                 # data["Description"]["data"] = ''
 
-            rev_tag = soup.find('strong', class_='text-xlg text-bold')
-            rev_ = rev_tag.text.strip()  # "(99)"
+            try:
+                rev_tag = soup.find('strong', class_='text-xlg text-bold')
+                rev_ = rev_tag.text.strip()  # "(99)"
+            except:
+                rev_ = ''
 
-            span_tag = soup.find('span', class_='rating')
-            tit_ = span_tag.text.strip()  # "4.4"
+            try:
+                span_tag = soup.find('span', class_='rating')
+                tit_ = span_tag.text.strip()  # "4.4"
+            except:
+                tit_ = ''
 
             merchant_button = soup.find('button', class_='js-link-merchant-name')
             merchant_name = merchant_button.text.strip()
